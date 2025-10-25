@@ -5,36 +5,51 @@ Tables: movies, ratings, tags, links
 
 Usage: python db_manager.py --db /data/moviedb.sqlite [--force]
 """
-import argparse
 import os
 import sqlite3
-import pandas as pd
+import csv
+import re
+import argparse
 
 CSV_DIR = "./ml-latest-small"
 
 SCHEMA = {
-    'movies': (
-        "movieId INTEGER PRIMARY KEY",
-        "title TEXT",
-        "genres TEXT"
-    ),
-    'ratings': (
-        "userId INTEGER",
-        "movieId INTEGER",
-        "rating REAL",
-        "timestamp INTEGER"
-    ),
-    'tags': (
-        "userId INTEGER",
-        "movieId INTEGER",
-        "tag TEXT",
-        "timestamp INTEGER"
-    ),
-    'links': (
-        "movieId INTEGER",
-        "imdbId INTEGER",
-        "tmdbId INTEGER"
-    )
+    "movies": """
+        CREATE TABLE IF NOT EXISTS movies (
+            movieId INTEGER PRIMARY KEY,
+            title TEXT,
+            year INTEGER,
+            genres TEXT
+        )
+    """,
+    "ratings": """
+        CREATE TABLE IF NOT EXISTS ratings (
+            userId INTEGER,
+            movieId INTEGER,
+            rating REAL,
+            timestamp INTEGER,
+            PRIMARY KEY (userId, movieId),
+            FOREIGN KEY (movieId) REFERENCES movies(movieId)
+        )
+    """,
+    "tags": """
+        CREATE TABLE IF NOT EXISTS tags (
+            userId INTEGER,
+            movieId INTEGER,
+            tag TEXT,
+            timestamp INTEGER,
+            PRIMARY KEY (userId, movieId, tag),
+            FOREIGN KEY (movieId) REFERENCES movies(movieId)
+        )
+    """,
+    "links": """
+        CREATE TABLE IF NOT EXISTS links (
+            movieId INTEGER PRIMARY KEY,
+            imdbId INTEGER,
+            tmdbId INTEGER,
+            FOREIGN KEY (movieId) REFERENCES movies(movieId)
+        )
+    """
 }
 
 CSV_TO_TABLE = {
@@ -50,24 +65,51 @@ def create_tables(conn: sqlite3.Connection, force: bool = False):
     if force:
         for t in SCHEMA.keys():
             cur.execute(f"DROP TABLE IF EXISTS {t}")
-    for t, cols in SCHEMA.items():
-        cols_sql = ', '.join(cols)
-        sql = f"CREATE TABLE IF NOT EXISTS {t} ({cols_sql})"
+    for t, sql in SCHEMA.items():
         cur.execute(sql)
     conn.commit()
 
 
+def split_title_year(title_str):
+    match = re.match(r"^(.*)\s\((\d{4})\)$", title_str.strip())
+    if match:
+        title, year = match.groups()
+        return title.strip(), int(year)
+    else:
+        return title_str.strip(), None
+
 def import_csv_to_table(conn: sqlite3.Connection, csv_path: str, table: str, cols: list):
     print(f"Importing {csv_path} -> {table}")
-    df = pd.read_csv(csv_path)
-    # keep only expected cols
-    df = df[[c for c in cols if c in df.columns]]
-    # write via executemany for predictable types
-    placeholders = ','.join(['?'] * len(df.columns))
-    sql = f"INSERT INTO {table} ({', '.join(df.columns)}) VALUES ({placeholders})"
+    rows = []
+    with open(csv_path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if table == "movies":
+            for row in reader:
+                movieId = int(row["movieId"])
+                title, year = split_title_year(row["title"])
+                genres = row["genres"]
+                rows.append((movieId, title, year, genres))
+            sql = "INSERT INTO movies VALUES (?, ?, ?, ?)"
+        elif table == "ratings":
+            for row in reader:
+                rows.append((int(row["userId"]), int(row["movieId"]), float(row["rating"]), int(row["timestamp"])))
+            sql = "INSERT INTO ratings VALUES (?, ?, ?, ?)"
+        elif table == "tags":
+            for row in reader:
+                rows.append((int(row["userId"]), int(row["movieId"]), row["tag"], int(row["timestamp"])))
+            sql = "INSERT INTO tags VALUES (?, ?, ?, ?)"
+        elif table == "links":
+            for row in reader:
+                imdbId = int(row["imdbId"]) if row["imdbId"] else None
+                tmdbId = int(row["tmdbId"]) if row["tmdbId"] else None
+                rows.append((int(row["movieId"]), imdbId, tmdbId))
+            sql = "INSERT INTO links VALUES (?, ?, ?)"
+        else:
+            raise ValueError(f"Unknown table: {table}")
     cur = conn.cursor()
-    cur.executemany(sql, df.fillna('').values.tolist())
+    cur.executemany(sql, rows)
     conn.commit()
+    print(f"Inserted {len(rows)} rows into `{table}`.")
 
 
 def main():
@@ -92,7 +134,7 @@ def main():
                 continue
             import_csv_to_table(conn, csv_path, table, cols)
 
-        print('Import complete')
+        print('\nAll tables created with primary/foreign keys and data inserted successfully!')
     finally:
         conn.close()
 

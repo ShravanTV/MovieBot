@@ -15,7 +15,8 @@ services:
     build: ./dbmanager
     environment:
       - FORCE_RECREATE=1
-      - KEEP_ALIVE=1
+      - KEEP_ALIVE=0
+      - OLLAMA_MODEL=qwen2.5:7b
     volumes:
       - db_data:/data
       - ./ml-latest-small:/app/ml-latest-small:ro
@@ -30,7 +31,9 @@ services:
       - db_data:/data:ro
     environment:
       - OLLAMA_URL=http://ollama:11434
-      - OLLAMA_MODEL=qwen3:0.6b
+      - OLLAMA_MODEL=qwen2.5:7b
+      - LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+      - LANGSMITH_PROJECT=MovieChatbot
       - LANGSMITH_API_KEY=REMOVED_SECRET
     ports:
       - "8000:8000"
