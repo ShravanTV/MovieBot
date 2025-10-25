@@ -34,7 +34,7 @@ services:
       - OLLAMA_MODEL=qwen2.5:7b
       - LANGSMITH_ENDPOINT=https://api.smith.langchain.com
       - LANGSMITH_PROJECT=MovieChatbot
-      - LANGSMITH_API_KEY=REMOVED_SECRET
+      - LANGSMITH_API_KEY=
     ports:
       - "8000:8000"
     depends_on:
