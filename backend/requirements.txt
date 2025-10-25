@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+databases
+pandas
+python-dotenv
+requests
+langgraph
+sqlitedict
+langchain
+langchain-community
+langchain-ollama
+pydantic
+langchain-core
+python-multipart
