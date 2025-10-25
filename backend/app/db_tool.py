@@ -11,7 +11,11 @@ class DBTool:
         return sqlite3.connect(self.db_path)
 
     def introspect_schema(self) -> Dict[str, List[str]]:
-        """Return a mapping of table -> list of column names."""
+        """
+        Get database schema, so that LLM understands and use it to generate SQL queries. 
+        Return a mapping of table -> list of column names.
+        
+        """
         conn = self._connect()
         cur = conn.cursor()
         cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -32,14 +36,13 @@ class DBTool:
 
         Safety rules:
         - Only allow SQL that starts with SELECT (case-insensitive)
-        - Disallow semicolons to prevent multiple statements
         """
         sql_strip = sql.strip()
-        lower = sql_strip.lower()
-        if not lower.startswith('select'):
+        sql_strip = sql_strip.rstrip(";")
+        if not sql_strip.lower().startswith('select'):
             return {'error': 'Only SELECT queries are allowed.'}
-        if ';' in sql_strip:
-            return {'error': 'Semicolons are not allowed in queries.'}
+#         if ';' in sql_strip:
+#             return {'error': 'Semicolons are not allowed in queries.'}
 
         conn = self._connect()
         conn.row_factory = sqlite3.Row
@@ -54,3 +57,4 @@ class DBTool:
         except Exception as e:
             conn.close()
             return {'error': str(e)}
+        

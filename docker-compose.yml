@@ -30,6 +30,8 @@ services:
       - db_data:/data:ro
     environment:
       - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=qwen3:0.6b
+      - LANGSMITH_API_KEY=REMOVED_SECRET
     ports:
       - "8000:8000"
     depends_on:
