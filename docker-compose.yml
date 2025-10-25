@@ -1,0 +1,55 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+
+
+  dbmanager:
+    build: ./dbmanager
+    environment:
+      - FORCE_RECREATE=1
+      - KEEP_ALIVE=1
+    volumes:
+      - db_data:/data
+      - ./ml-latest-small:/app/ml-latest-small:ro
+    depends_on:
+      - ollama
+    restart: "no"
+
+
+  backend:
+    build: ./backend
+    volumes:
+      - db_data:/data:ro
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    ports:
+      - "8000:8000"
+    depends_on:
+      - dbmanager
+      - ollama
+
+  webapp:
+    build: ./webapp
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://backend:8000/query/
+    depends_on:
+      - backend
+    volumes:
+      - ./webapp:/app
+
+
+
+volumes:
+  db_data:
+    driver: local
+
