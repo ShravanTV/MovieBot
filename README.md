@@ -85,23 +85,14 @@ This will:
 - **Request Body**:
 ```json
 {
-  "query": "Find movies directed by Christopher Nolan."
+    "session_id": "session1",
+    "chat_history": {"messages": [{"role": "user", "content": "Hello"}]}
 }
 ```
 - **Response**:
 ```json
 {
-  "structured_data": [
-    {
-      "title": "Inception",
-      "year": 2010
-    },
-    {
-      "title": "Interstellar",
-      "year": 2014
-    }
-  ],
-  "llm_response": "Christopher Nolan is known for his mind-bending films."
+  "ai_message": "Hello"
 }
 ```
 
