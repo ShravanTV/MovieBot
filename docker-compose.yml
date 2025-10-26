@@ -7,9 +7,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:11434"]
       interval: 15s
       timeout: 10s
-      retries: 20
+      retries: 3
     restart: unless-stopped
-
 
   dbmanager:
     build: ./dbmanager
@@ -22,8 +21,7 @@ services:
       - ./ml-latest-small:/app/ml-latest-small:ro
     depends_on:
       - ollama
-    restart: "no"
-
+    restart: unless-stopped
 
   backend:
     build: ./backend
@@ -34,7 +32,7 @@ services:
       - OLLAMA_MODEL=qwen2.5:7b
       - LANGSMITH_ENDPOINT=https://api.smith.langchain.com
       - LANGSMITH_PROJECT=MovieChatbot
-      - LANGSMITH_API_KEY=
+      - LANGSMITH_API_KEY=REDACTED
     ports:
       - "8000:8000"
     depends_on:
@@ -51,8 +49,6 @@ services:
       - backend
     volumes:
       - ./webapp:/app
-
-
 
 volumes:
   db_data:

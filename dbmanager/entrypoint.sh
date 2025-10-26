@@ -13,15 +13,15 @@ fi
 
 python db_manager.py --db "$DB_FILE" $args
 
-# # Wait for Ollama to be up
-# until curl -s http://ollama:11434 > /dev/null; do
-#   echo "Waiting for Ollama to be available..."
-#   sleep 2
-# done
+# Wait for Ollama to be up
+until curl -s http://ollama:11434 > /dev/null; do
+  echo "Waiting for Ollama to be available..."
+  sleep 2
+done
 
-# OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b}
-# echo "Ollama is up. Pulling model: $OLLAMA_MODEL ..."
-# curl -X POST http://ollama:11434/api/pull -d "{\"name\": \"$OLLAMA_MODEL\"}" -H 'Content-Type: application/json'
+OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b}
+echo "Ollama is up. Pulling model: $OLLAMA_MODEL ..."
+curl -X POST http://ollama:11434/api/pull -d "{\"name\": \"$OLLAMA_MODEL\"}" -H 'Content-Type: application/json'
 
 
 # By default exit after import. Set KEEP_ALIVE=1 to keep container alive for inspection.
