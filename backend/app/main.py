@@ -17,7 +17,6 @@ from .tools.fix_sql_query import fix_sql_query
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("api")
 
-
 app = FastAPI(title='MovieBot Backend')
 
 # LangSmith environment setup to trace requests
@@ -26,20 +25,16 @@ os.environ["LANGSMITH_ENDPOINT"] = os.getenv("LANGSMITH_ENDPOINT")
 os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT")
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
 
-
 # Create an instance of DBTool
 db = DBTool()
-
 
 # LLM setup
 OLLAMA_BASE_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
 llm = ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL)
 
-
 # List of available tools for the agent
 tools = [generate_sql, execute_sql_query, fix_sql_query]
-
 
 # System message
 SYSTEM_PROMPT = """
@@ -58,25 +53,48 @@ DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the databa
 Respond in a conversational and friendly tone.
 """
 
-
 class ChatMessage(BaseModel):
+    """
+    Represents a single chat message in the conversation history.
+
+    Attributes:
+        role (str): The role of the message sender (e.g., "user", "assistant").
+        content (str): The content of the message.
+    """
     role: str
     content: str
 
 class ChatRequest(BaseModel):
+    """
+    Represents a chat request payload.
+
+    Attributes:
+        session_id (Optional[str]): The session ID for the chat.
+        chat_history (List[ChatMessage]): The history of messages in the chat.
+    """
     session_id: Optional[str]
     chat_history: List[ChatMessage]
 
 class ChatResponse(BaseModel):
-    ai_message: str
+    """
+    Represents the response from the AI assistant.
 
+    Attributes:
+        ai_message (str): The AI-generated response message.
+    """
+    ai_message: str
 
 @app.post('/query')
 def query(request: ChatRequest):
     """
     Handle chat queries from the frontend. This endpoint receives a chat history,
     processes it using the MovieBot agent, and returns the AI's response.
-    Exceptions are caught and logged, and a user-friendly error is returned.
+
+    Args:
+        request (ChatRequest): The chat request payload containing session ID and chat history.
+
+    Returns:
+        ChatResponse: The AI-generated response to the user's query.
     """
     logger.info(f"Received chat request: session_id={request.session_id}")
     try:
