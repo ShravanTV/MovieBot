@@ -1,20 +1,32 @@
 import sqlite3
 from typing import List, Dict, Any, Optional
+import logging
+import time
 
 DB_PATH = '/data/moviedb.sqlite'
+
+logger = logging.getLogger("db_tool")
 
 class DBTool:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
 
-    def _connect(self):
-        return sqlite3.connect(self.db_path)
+    def _connect(self, retries: int = 3, delay: int = 2):
+        """Establish a connection to the database with retries."""
+        for attempt in range(retries):
+            try:
+                return sqlite3.connect(self.db_path)
+            except sqlite3.OperationalError as e:
+                logger.error(f"Database connection failed (attempt {attempt + 1}/{retries}): {e}")
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                else:
+                    raise
 
     def introspect_schema(self) -> Dict[str, List[str]]:
         """
         Get database schema, so that LLM understands and use it to generate SQL queries. 
         Return a mapping of table -> list of column names.
-        
         """
         conn = self._connect()
         cur = conn.cursor()
@@ -41,8 +53,6 @@ class DBTool:
         sql_strip = sql_strip.rstrip(";")
         if not sql_strip.lower().startswith('select'):
             return {'error': 'Only SELECT queries are allowed.'}
-#         if ';' in sql_strip:
-#             return {'error': 'Semicolons are not allowed in queries.'}
 
         conn = self._connect()
         conn.row_factory = sqlite3.Row
@@ -55,6 +65,6 @@ class DBTool:
             conn.close()
             return {'columns': list(cols), 'rows': results}
         except Exception as e:
+            logger.error(f"Error executing query: {e}")
             conn.close()
             return {'error': str(e)}
-        
