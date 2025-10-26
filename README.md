@@ -48,6 +48,7 @@ The project consists of four main components:
 - Docker and Docker Compose
 - Python 3.10+
 - MovieLens dataset (included in ml-latest-small/)
+- langsmith api key (If not required comment out langsmith keys in backend-->apps-->main.py)
 
 ### Installation
 
@@ -73,7 +74,6 @@ This will:
 
 - Web Interface: http://localhost:8501
 - Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
 
 ## API Documentation
 
