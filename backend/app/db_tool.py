@@ -8,11 +8,29 @@ DB_PATH = '/data/moviedb.sqlite'
 logger = logging.getLogger("db_tool")
 
 class DBTool:
+    """
+    A utility class for interacting with the SQLite database.
+
+    Attributes:
+        db_path (str): The path to the SQLite database file.
+    """
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
 
     def _connect(self, retries: int = 3, delay: int = 2):
-        """Establish a connection to the database with retries."""
+        """
+        Establish a connection to the database with retries.
+
+        Args:
+            retries (int): Number of retry attempts for connection.
+            delay (int): Delay (in seconds) between retries.
+
+        Returns:
+            sqlite3.Connection: A connection object to the SQLite database.
+
+        Raises:
+            sqlite3.OperationalError: If the connection fails after retries.
+        """
         for attempt in range(retries):
             try:
                 return sqlite3.connect(self.db_path)
@@ -25,8 +43,10 @@ class DBTool:
 
     def introspect_schema(self) -> Dict[str, List[str]]:
         """
-        Get database schema, so that LLM understands and use it to generate SQL queries. 
-        Return a mapping of table -> list of column names.
+        Get the database schema to help the LLM generate SQL queries.
+
+        Returns:
+            Dict[str, List[str]]: A mapping of table names to their column names.
         """
         conn = self._connect()
         cur = conn.cursor()
@@ -43,11 +63,16 @@ class DBTool:
         conn.close()
         return schema
 
-    def execute_select(self, sql: str, max_rows: int = 200) -> Dict[str, Any]:
-        """Execute a SELECT SQL statement safely and return rows and columns.
+    def execute_select(self, sql: str, max_rows: int = 20) -> Dict[str, Any]:
+        """
+        Execute a SELECT SQL statement safely and return rows and columns.
 
-        Safety rules:
-        - Only allow SQL that starts with SELECT (case-insensitive)
+        Args:
+            sql (str): The SQL query to execute.
+            max_rows (int): The maximum number of rows to fetch.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing columns and rows, or an error message.
         """
         sql_strip = sql.strip()
         sql_strip = sql_strip.rstrip(";")
