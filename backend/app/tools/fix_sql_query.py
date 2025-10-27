@@ -5,11 +5,10 @@ Tool for fixing invalid SQL queries using LLM.
 from langchain.tools import tool
 from app.db_tool import DBTool
 import os
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
-llm = ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL)
+GROQ_MODEL = os.getenv("GROQ_MODEL", "deepseek-r1-distill-llama-70b")
+llm = ChatGroq(model=GROQ_MODEL)
 
 @tool
 def fix_sql_query(error_message: str, original_sql: str):

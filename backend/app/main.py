@@ -4,11 +4,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 import logging
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage
-from typing_extensions import TypedDict
-from typing import Annotated
-from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
 from .tools.generate_sql import generate_sql
 from .tools.execute_sql_query import execute_sql_query
@@ -29,9 +26,8 @@ os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
 db = DBTool()
 
 # LLM setup
-OLLAMA_BASE_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
-llm = ChatOllama(model=OLLAMA_MODEL, base_url=OLLAMA_BASE_URL)
+GROQ_MODEL = os.getenv("GROQ_MODEL", "deepseek-r1-distill-llama-70b")
+llm = ChatGroq(model=GROQ_MODEL)
 
 # List of available tools for the agent
 tools = [generate_sql, execute_sql_query, fix_sql_query]

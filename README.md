@@ -1,11 +1,15 @@
 # MovieBot
 
-A conversational AI chatbot that helps users discover and learn about movies using the MovieLens dataset. The bot uses LangChain, Langgraph, Ollama, and SQLite to provide intelligent responses to movie-related queries.
+A conversational AI chatbot that helps users discover and learn about movies using the MovieLens dataset. The bot uses LangChain, Langgraph, GROQ, and SQLite to provide intelligent responses to movie-related queries.
+
+# Branches
+- GroqApproach - Utilises Groq, a fast and low cost inference API. As part of this project utilised free tier version.
+- Approach 1 - Builds ollama image locally and pulls required model. As part of this project utilised "Qwen 2.5 7B" model (because of system limitations used a model trained on lower parameters)
 
 ## Features
 
 - Natural language interaction for movie queries
-- Powered by Ollama's Qwen 2.5 7B model
+- Powered by Groq's "openai/gpt-oss-120b" model
 - Automatic SQL query generation and execution
 - User-friendly Streamlit web interface
 - Docker containerized architecture
@@ -14,20 +18,15 @@ A conversational AI chatbot that helps users discover and learn about movies usi
 
 ## Architecture
 
-The project consists of four main components:
+The project consists of three main components:
 
-### 1. Ollama Service
-- Runs the Qwen 2.5 7B model
-- Handles natural language processing
-- Exposed on port 11434
 
-### 2. DB Manager
+### 1. DB Manager
 - Processes MovieLens CSV data
 - Creates and manages SQLite database
 - Handles data initialization
-- Pulls required Ollama model
 
-### 3. Backend Service
+### 2. Backend Service
 - FastAPI-based REST API
 - Implements LangChain tools for:
   - SQL query generation
@@ -36,7 +35,7 @@ The project consists of four main components:
 - Database schema introspection
 - LangSmith integration for tracing
 
-### 4. Web Frontend
+### 3. Web Frontend
 - Streamlit-based user interface
 - Real-time chat interaction
 - Maintains conversation history
@@ -49,6 +48,7 @@ The project consists of four main components:
 - Python 3.10+
 - MovieLens dataset (included in ml-latest-small/)
 - langsmith api key (If not required comment out langsmith keys in backend-->apps-->main.py)
+- GROQ API KEY (https://console.groq.com/) : To make LLM inference calls
 
 ### Installation
 
@@ -65,7 +65,6 @@ docker compose up -d
 ```
 
 This will:
-- Start the Ollama service
 - Initialize the database with MovieLens data
 - Launch the backend API
 - Start the web interface
@@ -113,9 +112,8 @@ This will:
    - SQL queries are dynamically generated using LangChain tools to retrieve relevant data.
 
 2. **LLM Integration**:
-  - The Ollama-hosted qwen2.5:7b model is used for natural language understanding and tool orchestration.
-    - It has strong tool-calling and instruction-following capabilities, which improves reliability when invoking LangChain tools to generate SQL and other structured outputs.
-    - Running via Ollama enables low-latency, local/on-prem deployment for better privacy and reproducibility compared with remote APIs.
+  - The GROQ-hosted "openai/gpt-oss-120b" model is used for natural language understanding and tool orchestration.
+    - Trained on 120b parameters and has strong tool-calling, Reasoning,  instruction-following and multilingual capabilities, which improves reliability when invoking LangChain tools to generate SQL and other structured outputs.
     - Its relatively predictable outputs reduce post-processing and error-handling overhead, helping the backend more reliably execute and validate generated queries.
 
 3. **Combining Results**:
@@ -124,8 +122,8 @@ This will:
 ## Environment Variables
 
 ### Backend Service
-- `OLLAMA_URL`: Ollama service URL
-- `OLLAMA_MODEL`: Model name (default: qwen2.5:7b)
+- `GROQ_API_KEY`: Ollama service URL
+- `GROQ_MODEL`: Model name 
 - `LANGSMITH_ENDPOINT`: LangSmith API endpoint
 - `LANGSMITH_PROJECT`: Project name for tracing
 - `LANGSMITH_API_KEY`: API key for LangSmith
