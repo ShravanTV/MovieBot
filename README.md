@@ -1,11 +1,15 @@
 # MovieBot
 
-A conversational AI chatbot that helps users discover and learn about movies using the MovieLens dataset. The bot uses LangChain, Langgraph, Ollama, and SQLite to provide intelligent responses to movie-related queries.
+A conversational AI chatbot that helps users discover and learn about movies using the MovieLens dataset. The bot uses LangChain, Langgraph, GROQ, and SQLite to provide intelligent responses to movie-related queries.
+
+# Branches
+- GroqApproach - Utilises Groq, a fast and low cost inference API. As part of this project utilised free tier version.
+- Approach 1 - Builds ollama image locally and pulls required model. As part of this project utilised "Qwen 2.5 7B" model (because of system limitations used a model trained on lower parameters)
 
 ## Features
 
 - Natural language interaction for movie queries
-- Powered by Ollama's Qwen 2.5 7B model
+- Powered by Groq's "openai/gpt-oss-120b" model
 - Automatic SQL query generation and execution
 - User-friendly Streamlit web interface
 - Docker containerized architecture
@@ -14,7 +18,7 @@ A conversational AI chatbot that helps users discover and learn about movies usi
 
 ## Architecture
 
-The project consists of four main components:
+The project consists of three main components:
 
 
 ### 1. DB Manager
