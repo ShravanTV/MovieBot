@@ -9,7 +9,7 @@ langgraph
 sqlitedict
 langchain
 langchain-community
-langchain-ollama
+langchain_groq
 pydantic
 langchain-core
 python-multipart

@@ -1,35 +1,23 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
 
   dbmanager:
     build: ./dbmanager
     environment:
       - FORCE_RECREATE=1
-      - KEEP_ALIVE=0
-      - OLLAMA_MODEL=qwen2.5:7b
+      - KEEP_ALIVE=1
+    # restart: unless-stopped
     volumes:
       - db_data:/data
       - ./ml-latest-small:/app/ml-latest-small:ro
-    depends_on:
-      - ollama
-    restart: unless-stopped
+ 
 
   backend:
     build: ./backend
     volumes:
       - db_data:/data:ro
     environment:
-      - OLLAMA_URL=http://ollama:11434
-      - OLLAMA_MODEL=qwen2.5:7b
+      - GROQ_MODEL=openai/gpt-oss-120b
+      - GROQ_API_KEY=REDACTED
       - LANGSMITH_ENDPOINT=https://api.smith.langchain.com
       - LANGSMITH_PROJECT=MovieChatbot
       - LANGSMITH_API_KEY=REDACTED
@@ -37,7 +25,6 @@ services:
       - "8000:8000"
     depends_on:
       - dbmanager
-      - ollama
 
   webapp:
     build: ./webapp

@@ -33,7 +33,7 @@ if prompt := st.chat_input("Ask about movie..."):
         "chat_history": st.session_state["messages"][-6:]
     }
     try:
-        response = requests.post(API_URL, json=payload, timeout=60)
+        response = requests.post(API_URL, json=payload, timeout=300)
         response.raise_for_status()
         ai_message = response.json().get("ai_message", "")
     except Exception as e:
